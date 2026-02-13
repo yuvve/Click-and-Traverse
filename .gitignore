@@ -1,5 +1,6 @@
 .history
 /*.sh
+!/runner.sh
 MUJOCO_LOG.TXT
 
 # Temporary files
