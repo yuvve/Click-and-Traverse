@@ -33,7 +33,9 @@ if [[ -n "$3" ]]; then
   task="$1"
   exp="$2"
   obs="$3"
+  flags=("${@:4}")
 else
+  flags=()
   echo "Privileged tasks are more informative for distilling generalist policies."
   echo "Default tasks can be directly used for sim-to-real deployment."
   echo "Do you want privileged tasks? (y/N)"
@@ -43,6 +45,7 @@ else
   if [[ "$ans" == "y" ]]; then
     task="G1CatPri"
     exp=$(file-picker 'data/logs/G1_mj_axis/*G1CatPri_*')
+    flags+=(--pri)
   else
     task="G1Cat"
     exp=$(file-picker 'data/logs/G1_mj_axis/*G1Cat_*')
@@ -56,5 +59,5 @@ else
     obs=$(file-picker 'data/assets/TypiObs/*')
   fi
 fi
-echo "python -m cat_ppo.eval.mj_onnx_play --task \"$task\" --exp_name \"$exp\" --obs_name \"$obs\""
-python -m cat_ppo.eval.mj_onnx_play --task "$task" --exp_name "$exp" --obs_name "$obs"
+echo "python -m cat_ppo.eval.mj_onnx_play --task \"$task\" --exp_name \"$exp\" --obs_name \"$obs\" ${flags[*]}"
+python -m cat_ppo.eval.mj_onnx_play --task "$task" --exp_name "$exp" --obs_name "$obs" "${flags[@]}"
