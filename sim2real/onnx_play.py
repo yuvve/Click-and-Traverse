@@ -1,8 +1,16 @@
 import tyro
-import numpy as np
-import onnxruntime as rt
 from dataclasses import dataclass
-from g1 import G1
+from g1 import G1, G1Config
+from constants import ACTION_JOINT_NAMES
+
+ACTION_JOINT_ID_LOOKUP = {
+    # Name: ID
+    # ...
+}
+
+action_joint_ids = []
+for joint_name in ACTION_JOINT_NAMES:
+    action_joint_ids.append(ACTION_JOINT_ID_LOOKUP[joint_name])
 
 
 @dataclass
@@ -12,15 +20,11 @@ class Args:
 
 def play(args: Args):
     onnx_model_path = args.onnx_model_path
-    output_names = ["continuous_actions"]
-    policy = rt.InferenceSession(onnx_model_path, providers=["CPUExecutionProvider"])
-    robot = G1()
+    config = G1Config(action_joint_ids, action_scale=0.5)
+    robot = G1(config)
+    robot.load_model(onnx_model_path)
     while True:
-        state = robot.get_observation().reshape(1, -1).astype(np.float32)
-        onnx_input = {"obs": state}
-        action = policy.run(output_names, onnx_input)[0]
-        action = action[0]
-        robot.actuate(action)
+        robot.run()
 
 
 if __name__ == "__main__":

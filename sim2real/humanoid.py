@@ -3,8 +3,18 @@ from abc import ABC, abstractmethod
 
 class Humanoid(ABC):
     @abstractmethod
-    def get_observation(self) -> dict:
-        """Provides the input to the neural network"""
+    def run(self):
+        """Runs the robot with the current model"""
+        pass
+
+    @abstractmethod
+    def load_model(self, onnx_model_path: str):
+        """Loads an onnx model to be used for inference"""
+        pass
+
+    @abstractmethod
+    def get_state(self) -> dict:
+        """Creates the input to the neural network"""
         pass
 
     @abstractmethod
@@ -24,5 +34,5 @@ class Humanoid(ABC):
 
     @abstractmethod
     def get_command(self) -> dict:
-        """Provides the current command to the robot"""
+        """Provides the current command"""
         pass
