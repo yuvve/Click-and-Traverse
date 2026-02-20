@@ -6,13 +6,12 @@ from humanoid import Humanoid
 class G1(Humanoid):
     def __init__(self):
         super().__init__()
-        self.state = {}
-        self.actions = []
-        self.commands = []
+        self.state = None
+        self.actions = None
+        self.commands = None
         self.reset()
 
     def get_observation(self) -> dict:
-        # Implement the observation logic for G1
         state = jp.hstack(
             [
                 self._get_gyro_pelvis(),
