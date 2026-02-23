@@ -18,8 +18,9 @@ wandb/
 
 # IDE directories
 .idea/
-.vscode/
-!/.vscode/launch.json
+.vscode/*
+!.vscode/
+!.vscode/launch.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
