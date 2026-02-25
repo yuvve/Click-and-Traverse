@@ -3,7 +3,7 @@
   "configurations": [
     {
       "name": "Run mj_onnx_play (root)",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "cat_ppo.eval.mj_onnx_play",
       "args": [
