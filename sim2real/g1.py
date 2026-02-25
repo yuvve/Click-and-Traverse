@@ -29,10 +29,10 @@ class G1IO(HumanoidAsyncIO):
 
 
 class G1(Humanoid):
-    def __init__(self, config: G1Config):
+    def __init__(self, config: G1Config, io: G1IO):
         super().__init__()
         self.config = config
-        self.io = G1IO()
+        self.io = io
         self.state = None
         self.actions = None
         self.commands = None

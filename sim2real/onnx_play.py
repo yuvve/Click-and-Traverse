@@ -1,7 +1,7 @@
 import tyro
 import numpy as np
 from dataclasses import dataclass
-from g1 import G1, G1Config
+from g1 import G1, G1Config, G1IO
 from constants import ACTION_JOINT_NAMES, DEFAULT_QPOS
 
 ACTION_JOINT_ID_LOOKUP = {
@@ -22,7 +22,8 @@ class Args:
 def play(args: Args):
     onnx_model_path = args.onnx_model_path
     config = G1Config(action_joint_ids=action_joint_ids, motor_targets=np.array(DEFAULT_QPOS[7:]), action_scale=0.5)
-    robot = G1(config)
+    io = G1IO()
+    robot = G1(config, io)
     robot.load_model(onnx_model_path)
     while True:
         robot.step()
