@@ -27,3 +27,13 @@ class Humanoid(ABC):
     def reset(self):
         """Resets the robot to its initial state"""
         pass
+
+
+class HumanoidAsyncIO(ABC):
+    @abstractmethod
+    def send(self, channel, data):
+        pass
+
+    @abstractmethod
+    def subscribe(self, channel):
+        pass

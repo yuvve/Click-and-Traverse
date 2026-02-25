@@ -1,23 +1,25 @@
-import jax.numpy as jp
 import numpy as np
 from dataclasses import dataclass
-from cat_ppo.envs.g1.constants import ACTION_JOINT_NAMES
 from cat_ppo.envs.g1.env_cat import world_to_navi_pos
-from cat_ppo.envs.g1.play_cat import base2navi_transform
-from humanoid import Humanoid
+from cat_ppo.envs.g1.play_cat import base2navi_transform, world_to_navi_vel
+from humanoid import Humanoid, HumanoidAsyncIO
 from onnx_model import ONNXPolicy
-from humanoid_io import HumanoidAsyncIO
 
 
 @dataclass
 class G1Config:
     action_joint_ids: list
-    motor_targets: np.ndarray
+    obs_joint_ids: list
+    default_qpos: np.ndarray
     action_scale: float = 0.5
+    foot_height: float = 0.07
+
+    def __init__(self):
+        self.default_motor_targets = self.default_qpos
 
 
 class G1IO(HumanoidAsyncIO):
-    def __init__(self) -> None:
+    def __init__(self):
         super().__init__()
         raise NotImplementedError
 
@@ -33,10 +35,6 @@ class G1(Humanoid):
         super().__init__()
         self.config = config
         self.io = io
-        self.state = None
-        self.actions = None
-        self.commands = None
-        self.current_model = None
         self.reset()
 
     def step(self):
@@ -53,7 +51,7 @@ class G1(Humanoid):
     def get_state(self) -> np.ndarray:
         """
         :returns the current state of the robot:
-        np.hstack
+        np.ndarray
         dtype: dtype('float64')
         shape: (162,)
         """
@@ -65,14 +63,14 @@ class G1(Humanoid):
                 self._get_gyro_pelvis(),  # 3
                 self._get_gvec_pelvis(),  # 3
                 # joint state
-                (self._get_joint_angles() - self._default_qpos)[self.obs_joint_ids],  # 23
-                self._get_joint_vel()[self.obs_joint_ids],  # 23
+                (self._get_joint_angles() - self.config.default_qpos)[self.config.obs_joint_ids],  # 23
+                self._get_joint_vel()[self.config.obs_joint_ids],  # 23
                 self._get_last_action(),  # 12
-                info["motor_targets"][self.action_joint_ids],  # num_actions
+                self._get_motor_targets()[self.config.action_joint_ids],  # num_actions
                 # commands
                 [self._get_last_flags()[1]],
                 self._get_command(navi2world_pose),  # 4
-                self._get_foot_height(),  # 1
+                self.config.foot_height,  # 1
                 self._get_gait_phase(),  # 4
                 self._get_gf(navi2world_pose, "head"),
                 self._get_bf(navi2world_pose, "head"),
@@ -128,6 +126,9 @@ class G1(Humanoid):
         # return info["last_act"]
         raise NotImplementedError
 
+    def _get_motor_targets(self):
+        return self.motor_targets
+
     def _get_last_flags(self) -> list[np.float64]:
         # return info["last_flags"]
         raise NotImplementedError
@@ -177,16 +178,17 @@ class G1(Humanoid):
         field = np.clip(field, -1.0, 0.5)
         return field.reshape(-1)
 
-    def _get_foot_height(self) -> None:
-        # return info["foot_height"]
-        raise NotImplementedError
-
-    def _get_command(self, navi2world_pose) -> None:
-        # command = info["command"].copy()
-        # command = world_to_navi_vel(navi2world_pose, command.reshape(-1, 3)).reshape(3)
-        # command[-1] = 0
-        # return command
-        raise NotImplementedError
+    def _get_command(self, navi2world_pose) -> np.ndarray:
+        """
+        np.ndarray
+        dtype: dtype('float64')
+        shape: (3,)
+        size: 3
+        """
+        command = self.command.copy()
+        command = world_to_navi_vel(navi2world_pose, command.reshape(-1, 3)).reshape(3)
+        command[-1] = 0
+        return command
 
     def _get_actuation_action(self, onnx_output) -> dict:
         # lower_motor_targets = jp.clip(
@@ -215,4 +217,10 @@ class G1(Humanoid):
         pass
 
     def reset(self):
-        pass
+        self.current_model = None
+        self.motor_targets = self.config.default_motor_targets
+        self.actions = None
+        self.command = None  # TODO: see below
+        # command = self.compute_cmd_from_rtf(
+        #     pelvgf.reshape(-1), np.concat([headgf, feetgf, handsgf]), np.concat([headbf, feetbf, handsbf])
+        # )
