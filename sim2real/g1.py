@@ -219,8 +219,95 @@ class G1(Humanoid):
     def reset(self):
         self.current_model = None
         self.motor_targets = self.config.default_motor_targets
-        self.actions = None
-        self.command = None  # TODO: see below
-        # command = self.compute_cmd_from_rtf(
-        #     pelvgf.reshape(-1), np.concat([headgf, feetgf, handsgf]), np.concat([headbf, feetbf, handsbf])
-        # )
+
+    # def reset(self):
+    #     self.mj_data.qpos[:7] = consts.DEFAULT_QPOS[:7]
+    #     self.mj_data.qpos[7:] = self._default_qpos
+    #
+    #     mujoco.mj_forward(self.mj_model, self.mj_data)
+    #     if not self.headless:
+    #         self.viewer.sync()
+    #     phase_dt = 2 * np.pi * self.dt * self.gait_freq
+    #
+    #     head_pos = self.mj_data.site_xpos[self._head_site_id]
+    #     head_vel = np.zeros_like(head_pos)
+    #     feet_pos = self.mj_data.site_xpos[self._feet_site_id]
+    #     feet_vel = np.zeros_like(feet_pos)
+    #     hands_pos = self.mj_data.site_xpos[self._hands_site_id]
+    #     hands_vel = np.zeros_like(hands_pos)
+    #     knees_pos = self.mj_data.site_xpos[self._knees_site_id]
+    #     shlds_pos = self.mj_data.site_xpos[self._shlds_site_id]
+    #     pelv_pos = self.mj_data.site_xpos[self._pelvis_imu_site_id].reshape(1, -1)
+    #     tors_pos = self.mj_data.site_xpos[self._torso_imu_site_id].reshape(1, -1)
+    #     all_poses = np.concatenate(
+    #         [
+    #             head_pos.reshape(1, -1),
+    #             pelv_pos.reshape(1, -1),
+    #             tors_pos.reshape(1, -1),
+    #             feet_pos,
+    #             hands_pos,
+    #             knees_pos,
+    #             shlds_pos,
+    #         ],
+    #         axis=0,
+    #     )
+    #     all_gf = self.sample_field(self.gf, all_poses)
+    #     all_bf = self.sample_field(self.bf, all_poses)
+    #     all_df = self.sample_field(self.sdf, all_poses)
+    #     headgf, pelvgf, torsgf, feetgf, handsgf, kneesgf, shldsgf = np.split(all_gf, [1, 2, 3, 5, 7, 9], axis=0)
+    #     headbf, pelvbf, torsbf, feetbf, handsbf, kneesbf, shldsbf = np.split(all_bf, [1, 2, 3, 5, 7, 9], axis=0)
+    #     headdf, pelvdf, torsdf, feetdf, handsdf, kneesdf, shldsdf = np.split(all_df, [1, 2, 3, 5, 7, 9], axis=0)
+    #
+    #     command = self.compute_cmd_from_rtf(
+    #         pelvgf.reshape(-1), np.concat([headgf, feetgf, handsgf]), np.concat([headbf, feetbf, handsbf])
+    #     )
+    #
+    #     info = {
+    #         "step": 0,
+    #         "command": command.copy(),
+    #         "last_command": command.copy(),
+    #         "flags": np.zeros(2),
+    #         "last_flags": np.zeros(2),
+    #         "last_act": np.zeros(12),
+    #         "phase_dt": phase_dt,
+    #         "phase": self._init_phase.copy(),
+    #         "foot_height": self.foot_height,
+    #         "motor_targets": self._default_qpos.copy(),  # NOTE
+    #         "timestamp_move2stop": 100,
+    #         "gait_mask": np.zeros(2),
+    #         "odom_delay": self.mj_data.qpos[:7],
+    #         "headgf": headgf.copy(),
+    #         "headbf": headbf.copy(),
+    #         "headdf": headdf.copy(),
+    #         "head_pos": head_pos.copy(),
+    #         "head_vel": head_vel.copy(),
+    #         "feetgf": feetgf.copy(),
+    #         "feetbf": feetbf.copy(),
+    #         "feetdf": feetdf.copy(),
+    #         "feet_pos": feet_pos.copy(),
+    #         "feet_vel": feet_vel.copy(),
+    #         "handsgf": handsgf.copy(),
+    #         "handsbf": handsbf.copy(),
+    #         "handsdf": handsdf.copy(),
+    #         "hands_pos": hands_pos.copy(),
+    #         "hands_vel": hands_vel.copy(),
+    #         "kneesgf": kneesgf.copy(),
+    #         "kneesbf": kneesbf.copy(),
+    #         "kneesdf": kneesdf.copy(),
+    #         "knees_pos": knees_pos.copy(),
+    #         "shldsgf": shldsgf.copy(),
+    #         "shldsbf": shldsbf.copy(),
+    #         "shldsdf": shldsdf.copy(),
+    #         "shlds_pos": shlds_pos.copy(),
+    #         "pelvgf": pelvgf.copy(),
+    #         "pelvbf": pelvbf.copy(),
+    #         "pelvdf": pelvdf.copy(),
+    #         "pelv_pos": pelv_pos.copy(),
+    #         "torsgf": torsgf.copy(),
+    #         "torsbf": torsbf.copy(),
+    #         "torsdf": torsdf.copy(),
+    #         "tors_pos": tors_pos.copy(),
+    #     }
+    #     # breakpoint()
+    #     obs = self.get_obs(info)
+    #     return State(info, obs)
