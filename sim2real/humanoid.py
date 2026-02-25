@@ -1,10 +1,11 @@
+import numpy as np
 from abc import ABC, abstractmethod
 
 
 class Humanoid(ABC):
     @abstractmethod
-    def run(self):
-        """Runs the robot with the current model"""
+    def step(self):
+        """Ask the model for the next action and perform it"""
         pass
 
     @abstractmethod
@@ -13,7 +14,7 @@ class Humanoid(ABC):
         pass
 
     @abstractmethod
-    def get_state(self) -> dict:
+    def get_state(self) -> np.ndarray:
         """Creates the input to the neural network"""
         pass
 
@@ -23,16 +24,6 @@ class Humanoid(ABC):
         pass
 
     @abstractmethod
-    def get_last_action(self) -> dict:
-        """Provides the last action taken by the robot"""
-        pass
-
-    @abstractmethod
     def reset(self):
         """Resets the robot to its initial state"""
-        pass
-
-    @abstractmethod
-    def get_command(self) -> dict:
-        """Provides the current command"""
         pass

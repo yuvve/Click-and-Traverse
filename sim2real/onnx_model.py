@@ -11,6 +11,6 @@ class ONNXPolicy:
     def _load_model(self):
         self.policy = rt.InferenceSession(self.onnx_model_path, providers=self.providers)
 
-    def inference(self, input_data: dict):
+    def inference(self, input_data):
         actions = self.policy.run(self.output_names, input_data)[0]
         return actions
