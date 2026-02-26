@@ -11,11 +11,23 @@ class G1Config:
     action_joint_ids: list
     obs_joint_ids: list
     default_qpos: np.ndarray
+    joint_ranges: np.ndarray
+    kp_gains: np.ndarray
+    kd_gains: np.ndarray
     action_scale: float = 0.5
     foot_height: float = 0.07
+    soft_joint_pos_limit_factor: float = 0.95
 
     def __init__(self):
         self.default_motor_targets = self.default_qpos
+        self.calc_joint_ranges()
+
+    def calc_joint_ranges(self):
+        self.lowers, self.uppers = self.joint_ranges[1:].T
+        c = (self.lowers + self.uppers) / 2
+        r = self.uppers - self.lowers
+        self.soft_lowers = c - 0.5 * r * self.soft_joint_pos_limit_factor
+        self.soft_uppers = c + 0.5 * r * self.soft_joint_pos_limit_factor
 
 
 class G1IO(HumanoidAsyncIO):
@@ -98,8 +110,8 @@ class G1(Humanoid):
         return state
 
     def actuate(self, onnx_output: dict):
-        action = self._get_actuation_action(onnx_output)
-        self._send_actuation(action)
+        torques = self._get_actuation_action(onnx_output)
+        self._send_torques(torques)
 
     def _get_gyro_pelvis(self) -> np.ndarray:
         # return self.mj_data.sensordata[sensor_adr : sensor_adr + sensor_dim]
@@ -128,6 +140,9 @@ class G1(Humanoid):
 
     def _get_motor_targets(self):
         return self.motor_targets
+
+    def _set_motor_targets(self, new_motor_targets):
+        self.motor_targets = new_motor_targets
 
     def _get_last_flags(self) -> list[np.float64]:
         # return info["last_flags"]
@@ -190,31 +205,26 @@ class G1(Humanoid):
         command[-1] = 0
         return command
 
-    def _get_actuation_action(self, onnx_output) -> dict:
-        # lower_motor_targets = jp.clip(
-        #     _get_motor_targets()[self.config.action_joint_ids] + onnx_output * self.config.action_scale,
-        #     self._soft_lowers[self.action_joint_ids],
-        #     self._soft_uppers[self.action_joint_ids],
-        # )
-        # motor_targets = self._default_qpos.copy()
-        # motor_targets = motor_targets.at[self.action_joint_ids].set(lower_motor_targets)
-        # state.info["rng"], data = torque_step(
-        #     state.info["rng"],
-        #     self.mjx_model,
-        #     state.data,
-        #     motor_targets,
-        #     kps=self._kps,
-        #     kds=self._kds,
-        #     kp_scale=state.info["kp_scale"],
-        #     kd_scale=state.info["kd_scale"],
-        #     rfi_lim_scale=state.info["rfi_lim_scale"],
-        #     torque_limit=self.torque_limit,
-        #     n_substeps=self.n_substeps,
-        # )
-        raise NotImplementedError
+    def _get_actuation_action(self, onnx_output) -> np.ndarray:
+        lower_motor_targets = np.clip(
+            self._get_motor_targets()[self.config.action_joint_ids] + onnx_output * self.config.action_scale,
+            self.config.soft_lowers[self.config.action_joint_ids],
+            self.config.soft_uppers[self.config.action_joint_ids],
+        )
 
-    def _send_actuation(self, action: dict):
-        pass
+        motor_targets = self.config.default_motor_targets.copy()
+        motor_targets[self.config.action_joint_ids] = lower_motor_targets
+        self._set_motor_targets(motor_targets.copy())
+
+        q = self._get_joint_angles()
+        qd = self._get_joint_vel()
+
+        torques = self.config.kp_gains * (self.motor_targets - q) + self.config.kd_gains * (-qd)
+
+        return torques
+
+    def _send_torques(self, torques: np.ndarray):
+        raise NotImplementedError
 
     def reset(self):
         self.current_model = None
