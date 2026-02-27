@@ -2,7 +2,7 @@ import numpy as np
 from abc import ABC, abstractmethod
 
 
-class Humanoid(ABC):
+class Robot(ABC):
     @abstractmethod
     def step(self):
         """Ask the model for the next action and perform it"""
@@ -29,11 +29,11 @@ class Humanoid(ABC):
         pass
 
 
-class HumanoidAsyncIO(ABC):
+class RobotIO(ABC):
     @abstractmethod
-    def send(self, channel, data):
+    def get_sensor_data(self, sensor_name):
         pass
 
     @abstractmethod
-    def subscribe(self, channel):
+    def send_actuation(self, actuation):
         pass

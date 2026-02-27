@@ -1,8 +1,8 @@
 import tyro
 import numpy as np
 from dataclasses import dataclass
-from g1 import G1, G1Config, G1IO
-from constants import ACTION_JOINT_NAMES, OBS_JOINT_NAMES, DEFAULT_QPOS
+from g1 import G1, G1Config, ROS2IO
+from constants import ACTION_JOINT_NAMES, OBS_JOINT_NAMES, DEFAULT_QPOS, KPs, KDs
 
 JOINT_ID_LOOKUP = {
     # Name: ID
@@ -30,9 +30,12 @@ def play(args: Args):
         action_joint_ids=action_joint_ids,
         obs_joint_ids=obs_joint_ids,
         default_qpos=np.array(DEFAULT_QPOS[7:]),
-        action_scale=0.5,
+        joint_ranges=None,  # TODO: initialize to correct values
+        kp_gains=KPs,
+        kd_gains=KDs,
+        sensor_name_to_id_map=None,  # TODO: initialize to correct values
     )
-    io = G1IO()
+    io = ROS2IO()
     robot = G1(config, io)
     robot.load_model(onnx_model_path)
     while True:
