@@ -1,7 +1,8 @@
 import tyro
 import numpy as np
 from dataclasses import dataclass
-from g1 import G1, G1Config, ROS2IO
+from g1 import G1, G1Config
+from ros_adapter import ROS2IO
 from constants import ACTION_JOINT_NAMES, OBS_JOINT_NAMES, DEFAULT_QPOS, KPs, KDs
 
 JOINT_ID_LOOKUP = {

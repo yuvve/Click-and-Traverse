@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import numpy as np
 from abc import ABC, abstractmethod
 
@@ -37,3 +38,8 @@ class RobotIO(ABC):
     @abstractmethod
     def send_actuation(self, actuation):
         pass
+
+
+@dataclass
+class RobotConfig(ABC):
+    pass

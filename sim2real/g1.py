@@ -2,13 +2,12 @@ import numpy as np
 from dataclasses import dataclass
 from cat_ppo.envs.g1.env_cat import world_to_navi_pos
 from cat_ppo.envs.g1.play_cat import base2navi_transform, world_to_navi_vel
-from robot import Robot
-from ros_adapter import ROS2IO
+from robot import Robot, RobotIO, RobotConfig
 from onnx_model import ONNXPolicy
 
 
 @dataclass
-class G1Config:
+class G1Config(RobotConfig):
     action_joint_ids: list
     obs_joint_ids: list
     default_qpos: np.ndarray
@@ -26,6 +25,7 @@ class G1Config:
     def __init__(self):
         self.default_motor_targets = self.default_qpos
         self._calc_joint_ranges()
+        self._calc_phase()
 
     def _calc_joint_ranges(self):
         self.lowers, self.uppers = self.joint_ranges[1:].T
@@ -56,7 +56,7 @@ class Fields:
 
 
 class G1(Robot):
-    def __init__(self, config: G1Config, io: ROS2IO):
+    def __init__(self, config: G1Config, io: RobotIO):
         super().__init__()
         self.config = config
         self.io = io
