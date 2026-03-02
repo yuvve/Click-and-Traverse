@@ -76,9 +76,10 @@ class G1(Robot):
         state = self.get_state().reshape(1, -1).astype(np.float32)
         if self.current_model is None:
             raise ValueError("Model not loaded")
-        actions = self.current_model.inference(state)
-        action = actions[0]
-        self.actuate(action)
+        model_outputs = self.current_model.inference(state)
+        model_output = model_outputs[0]
+        self.actuate(model_output)
+        self.model_output = model_output
 
     def load_model(self, onnx_model_path: str):
         self.current_model = ONNXPolicy(onnx_model_path)
@@ -92,6 +93,7 @@ class G1(Robot):
         """
 
         navi2world_pose = self._get_navi2world_pose()
+        self._update_command(navi2world_pose)
 
         state = np.hstack(
             [
@@ -100,11 +102,11 @@ class G1(Robot):
                 # joint state
                 (self._get_joint_angles() - self.config.default_qpos)[self.config.obs_joint_ids],  # 23
                 self._get_joint_vel()[self.config.obs_joint_ids],  # 23
-                self._get_last_action(),  # 12
+                self._get_last_model_output(),  # 12
                 self._get_motor_targets()[self.config.action_joint_ids],  # num_actions
                 # commands
                 [self._get_last_flags()[1]],
-                self._get_command(navi2world_pose),  # 4
+                self._get_command(),  # 4
                 self.config.foot_height,  # 1
                 self._get_gait_phase(),  # 4
                 self._get_gf(navi2world_pose, "head"),
@@ -150,9 +152,8 @@ class G1(Robot):
     def _get_joint_vel(self) -> np.ndarray:
         return self.io.get_sensor_data(self.config.sensor_name_to_id_map["joint_vel"])[6:]
 
-    def _get_last_action(self):
-        # return info["last_act"]
-        raise NotImplementedError
+    def _get_last_model_output(self):
+        return self._get_last_model_output()
 
     def _get_motor_targets(self) -> np.ndarray:
         return self.motor_targets
@@ -161,8 +162,7 @@ class G1(Robot):
         self.motor_targets = new_motor_targets
 
     def _get_last_flags(self) -> list[np.float64]:
-        # return info["last_flags"]
-        raise NotImplementedError
+        return self.last_flags
 
     def _get_pelvis_imu(self) -> np.ndarray:
         return self.io.get_sensor_data(self.config.sensor_name_to_id_map["pelvis_imu"])
@@ -195,17 +195,21 @@ class G1(Robot):
         field = np.clip(field, -1.0, 0.5)
         return field.reshape(-1)
 
-    def _get_command(self, navi2world_pose) -> np.ndarray:
+    def _update_command(self, navi2world_pose):
         """
         np.ndarray
         dtype: dtype('float64')
         shape: (3,)
         size: 3
         """
+        self.last_command = self.command.copy()
         command = self.command.copy()
         command = world_to_navi_vel(navi2world_pose, command.reshape(-1, 3)).reshape(3)
         command[-1] = 0
-        return command
+        self.command = command
+
+    def _get_command(self) -> np.ndarray:
+        return self.command
 
     def _get_actuation_action(self, onnx_output) -> np.ndarray:
         lower_motor_targets = np.clip(
@@ -230,7 +234,12 @@ class G1(Robot):
 
     def reset(self):
         self.current_model = None
-        self.motor_targets = self.config.default_motor_targets
+        self.model_output = np.zeros(12)
+        self.command = None  # TODO: this is probably incorrect
+        self.last_command = None  # TODO: this is probably incorrect
+        self.flags = np.zeros(2)
+        self.last_flags = np.zeros(2)
+        self.motor_targets = self.config.default_motor_targets.copy()
         self.phase = self.config.init_phase
         # TODO: reset fields object
 
