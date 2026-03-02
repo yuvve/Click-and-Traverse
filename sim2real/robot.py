@@ -39,6 +39,10 @@ class RobotIO(ABC):
     def send_actuation(self, actuation):
         pass
 
+    @abstractmethod
+    def reset(self):
+        pass
+
 
 @dataclass
 class RobotConfig(ABC):

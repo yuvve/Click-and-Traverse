@@ -1,13 +1,16 @@
+from abc import abstractmethod
 from robot import RobotIO
 
 
 class ROS2IO(RobotIO):
-    def __init__(self):
-        super().__init__()
-        raise NotImplementedError
-
+    @abstractmethod
     def get_sensor_data(self, sensor_name):
-        raise NotImplementedError
+        pass
 
+    @abstractmethod
     def send_actuation(self, actuation):
-        raise NotImplementedError
+        pass
+
+    @abstractmethod
+    def reset(self):
+        pass
