@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- 不使用 substitution，而是直接定义固定 remap -->
+    <node pkg="ground_segmentation"
+          exec="ground_segmentation_node"
+          name="ground_segmentation_node"
+          output="screen">
+
+        <!-- 直接写死 topic 映射 -->
+        <remap from="/input_point_cloud" to="/cloud_registered"/>
+        <remap from="/filtered_point_cloud" to="/cloud_registered_filtered"/>
+
+    </node>
+</launch>

@@ -98,6 +98,54 @@ def generate_typical_obstacle(scene_type):
     # visualize_all(xv, yv, zv, sdf, T, gf, obs_mask, cfg.start_w, cfg.goal_w)
 
 
+def generate_pf(scene_type, pc_path):
+    prefix = f"{scene_type}/"
+    obs_cfg = ObsCfg()
+    cfg = PFConfig()
+    assert cfg.voxel == obs_cfg.voxel
+    assert (cfg.start_w == obs_cfg.start_w).all()
+    assert (cfg.goal_w == obs_cfg.goal_w).all()
+    assert (cfg.origin_w == obs_cfg.origin_w).all()
+    assert cfg.Lx == obs_cfg.Lx
+    assert cfg.Ly == obs_cfg.Ly
+    assert cfg.Lz == obs_cfg.Lz
+    
+    xv, yv, zv = make_axes(cfg)
+    X, Y, Z = np.meshgrid(xv, yv, zv, indexing='ij')
+    # obs_mask = torch.load(pc_path).cpu().numpy()
+    obs_mask = np.load(pc_path, allow_pickle=True) 
+    if obs_mask.dtype != np.bool_:
+        obs_mask = obs_mask.astype(np.uint8) > 0
+
+    # some pre-processing for real-to-sim occupancy
+    z_bar_thresh = 6
+    mask_bar = obs_mask[:, :, :z_bar_thresh] == 1
+    filled = np.cumsum(mask_bar[:, :, ::-1], axis=2)[:, :, ::-1] > 0
+    obs_mask[:, :, :z_bar_thresh] = filled.astype(np.uint8)
+
+    os.makedirs(f"../data/assets/R2SObs/{prefix}", exist_ok=True)
+    pts = occupancy_to_points(obs_mask, voxel_size=cfg.voxel)
+    preview_matplotlib(pts)
+    spacing = (cfg.voxel, cfg.voxel, cfg.voxel)
+    mesh = marching_cubes_mesh(obs_mask, spacing=spacing)
+    mesh.export(f"../data/assets/R2SObs/{prefix}obs.obj")
+
+    sdf = make_sdf(obs_mask, cfg.voxel)
+    bf  = grad3(sdf, cfg.voxel)
+    # Eikonal 
+    T, gf = make_guidance_field_progressive(cfg, (X, Y, Z), obs_mask, cfg.goal_w, bf, sdf)
+
+    # 保存
+    np.save(f"../data/assets/R2SObs/{prefix}sdf.npy", sdf)
+    np.save(f"../data/assets/R2SObs/{prefix}bf.npy",  bf)
+    np.save(f"../data/assets/R2SObs/{prefix}gf.npy",  gf)
+    np.save(f"../data/assets/R2SObs/{prefix}obs.npy", obs_mask.astype(np.uint8))
+    # sur = extract_surface_voxels(obs_mask)
+    # np.save(f"../data/assets/R2SObs/{prefix}sur.npy", sur.astype(np.uint8))
+    # 可视化
+    # visualize_all(xv, yv, zv, sdf, T, gf, obs_mask, cfg.start_w, cfg.goal_w)
+
+
 def better_mesh(spacing, obs_mask): # for mujoco visualization
     obs_mask[:,0,:] = 0
     obs_mask[:,-1,:] = 0

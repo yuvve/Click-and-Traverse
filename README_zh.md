@@ -1,20 +1,19 @@
 <div align="center">
   <h1 align="center"><img src="assets/icon.png" width="40" style="vertical-align: middle;">  Click and Traverse </h1>
   <h3 align="center"> 清华 · 银河 </h3>
-  
+
 [中文](README_zh.md) | [English](README.md)
 
-:page_with_curl:[论文](https://arxiv.org/abs/2601.16035) | :house:[项目主页](https://axian12138.github.io/CAT/) | :film_projector:[视频](https://www.youtube.com/watch?v=blek__Qf0Vc)
+📃[论文](https://arxiv.org/abs/2601.16035) | 🏠[项目主页](https://axian12138.github.io/CAT/) | 📽[视频](https://www.youtube.com/watch?v=blek__Qf0Vc)
 
 </div>
 
 本仓库**官方实现**了论文：
 
 > **Collision-Free Humanoid Traversal in Cluttered Indoor Scenes**
->  *Han Xue et al.* 
->  arXiv 预印本: [arXiv:2601.16035](https://arxiv.org/abs/2601.16035)<br>
->  项目主页: [https://axian12138.github.io/CAT/](https://axian12138.github.io/CAT/).
-
+> *Han Xue et al.*
+> arXiv 预印本: [arXiv:2601.16035](https://arxiv.org/abs/2601.16035) `<br>`
+> 项目主页: [https://axian12138.github.io/CAT/](https://axian12138.github.io/CAT/).
 
 本项目研究如何使人形机器人在**杂乱的室内场景**中安全穿行。我们将**杂乱的室内场景**定义为同时具有：
 
@@ -48,13 +47,21 @@
 - [许可证](#许可证)
 - [致谢](#致谢)
 - [联系我们](#联系我们)
+
 ---
+
+## 进展
+
+- 2026/03/07: 我们发布了CAT的真实部署代码！详情请参阅deploy/Click-and-Traverse-SLAM。
+- 2026/01/08: 我们发布了CAT的官网实现！
 
 ## 项目状态
 
-- [x] 🧩 程序化障碍生成与 HumanoidPF 构建
-- [x] 🧩 专家策略训练代码
-- [x] 🗂️ 预训练专家模型与场景数据
+- [X] 🧩 程序化障碍生成与 HumanoidPF 构建
+- [X] 🧩 专家策略训练代码
+- [X] 🗂️ 预训练专家模型与场景数据
+- [X] 🧩 真机部署代码
+- [X] 🧩 真机到仿真场景采集（用于验证实验与微调）
 - [ ] 🧩 专家到通用策略的蒸馏代码
 - [ ] 🗂️ 预训练通用模型
 - [ ] 🗂️ 扩展的场景数据集
@@ -67,7 +74,7 @@
 ### 1. 克隆仓库
 
 ```bash
-git clone https://github.com/Axian12138/Click-and-Traverse.git
+git clone https://github.com/GalaxyGeneralRobotics/Click-and-Traverse.git
 cd Click-and-Traverse
 ```
 
@@ -128,6 +135,11 @@ Click-and-Traverse/
 │   |   └── unitree_g1/             # 人形机器人资源
 │   └── logs/
 |       └── G1_mj_axis/             # 下载的检查点
+├── deploy/                         # 真机部署
+│   ├── gx_loco_deploy/             # 部署helpers
+│   ├── scripts/
+|   |   └── exp_dis_pf/         
+│   └── Click-and-Traverse-SLAM/
 └── procedural_obstacle_generation/ # 障碍生成
     ├── main.py
     ├── pf_modular.py               # HumanoidPF 构建
@@ -168,6 +180,7 @@ generate_typical_obstacle(obs_name)
 ```
 
 参数：
+
 - `obs_name`：障碍配置名称（详见 `main.py` 注释）
 
 ### 生成随机障碍
@@ -179,6 +192,7 @@ generate_random_obstacle(difficulty, seed, dL, dG, dO)
 ```
 
 参数：
+
 - `difficulty`：全局难度等级
 - `seed`：随机种子
 - `dL`：侧向障碍难度
@@ -216,13 +230,15 @@ python -m cat_ppo.eval.brax2onnx \
 ### 评估
 
 评估模型时（无特权观测），运行：
+
 ```bash
-python -m cat_ppo.eval.mj_onnx_play --task G1Cat --exp_name 12051223_G1LocoPFR10_OdonoiseSlowV2_xP2xMxK00xlowcorner --obs_name lowcorner
+python -m cat_ppo.eval.mj_onnx_play --task G1Cat --exp_name 12051223_G1LocoPFR10_OdonoiseSlowV2_xP2xMxK00xlowcorner --obs_path data/assets/TypiObs/lowcorner
 ```
 
 评估模型时（有特权观测），运行：
+
 ```bash
-python -m cat_ppo.eval.mj_onnx_play --task G1CatPri --pri --exp_name 10140612_G1LocoPF7_v4_xP1xMxK004xD8101S4 --obs_name D8G0L1O1S4
+python -m cat_ppo.eval.mj_onnx_play --task G1CatPri --pri --exp_name G1CatPri_narrow1 --obs_path data/assets/TypiObs/narrow1
 ```
 
 ---

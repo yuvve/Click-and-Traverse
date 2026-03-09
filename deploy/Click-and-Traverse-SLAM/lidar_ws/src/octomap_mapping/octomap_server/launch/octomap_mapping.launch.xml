@@ -1,0 +1,64 @@
+<!--
+  Example launch file for octomap_server mapping:
+  Listens to incoming PointCloud2 data and incrementally builds an octomap.
+  The data is sent out in different representations.
+
+  Copy this file into your workspace and adjust as needed, see
+  www.ros.org/wiki/octomap_server for details
+-->
+
+<launch>
+
+<node pkg="octomap_server" exec="octomap_server_node" name="octomap_server">
+<param name="resolution" value="0.04"/>
+<param name="max_depth" value="10"/>
+<!--  fixed map frame (set to 'map' if SLAM or localization running!)  -->
+<!--  <param name="frame_id" value="odom_combined" />  -->
+<!-- <param name="frame_id" value="base_footprint"/>
+ <param name="base_frame_id" value="base_footprint" />  -->
+
+<param name="frame_id" value="floor_init"/>
+ <!-- if filter_ground_plane if false, base_frame_id will not use!!!-->
+ <param name="base_frame_id" value="floor_init" /> 
+<!--  <param name="octomap_path" value="/tmp/null.bt" />  -->
+<!--  maximum range to integrate (speedup!)  -->
+<param name="sensor_model.max_range" value="2.5"/>
+<param name="filter_ground_plane" value="false"/>
+<!-- <param name="height_map" value="false"/> --> 
+<param name="use_height_map" value="true" />
+<param name="latch" value="false" />
+<param name="colored_map" value="false" />
+<param name="filter_speckles" value="false" />
+
+<!-- very important -->
+<!-- <param name="sensor_model.hit" value="0.95"/>  -->
+<!-- 0.7 0.5~1.0 -->
+<!-- <param name="sensor_model.miss" value="0.48"/> -->
+<!-- 0.4 0.0~0.5 -->
+<!-- <param name="sensor_model.min" value="0.1"/> -->
+<!-- 0.12 0.0~1.0 -->
+<!-- <param name="sensor_model.max" value="0.99999"/> -->
+<!-- 0.97 0.0~1.0 -->
+
+<param name="sensor_model.hit" value="0.7"/> 
+<!-- 0.7 0.5~1.0 -->
+<param name="sensor_model.miss" value="0.4"/>
+<!-- 0.4 0.0~0.5 -->
+<param name="sensor_model.min" value="0.12"/>
+<!-- 0.12 0.0~1.0 -->
+<param name="sensor_model.max" value="0.97"/>
+<!-- 0.97 0.0~1.0 -->
+
+<param name="ground_filter.distance" value="0.19"/>
+<!--  data source to integrate (PointCloud2)  -->
+<!--  <remap from="cloud_in" to="/narrow_stereo/points_filtered2" />  -->
+<!-- <remap from="cloud_in" to="/Laser_map"/> -->
+<!-- <remap from="cloud_in" to="/cloud_registered"/> -->
+<!-- <remap from="cloud_in" to="/cloud_registered_body"/> -->
+<remap from="cloud_in" to="/filtered_point_cloud"/>
+<!-- <remap from="cloud_in" to="/Laser_map"/> -->
+
+</node>
+
+</launch>
+

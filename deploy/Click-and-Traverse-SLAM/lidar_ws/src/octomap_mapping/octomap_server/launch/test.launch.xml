@@ -1,0 +1,9 @@
+<launch>
+  <!-- map → base_link -->
+  <node pkg="tf2_ros" exec="static_transform_publisher" name="map_to_base_link"
+        args="0 0 0 0 0 0 1 map base_link"/>
+
+  <!-- base_footprint → base_link -->
+  <node pkg="tf2_ros" exec="static_transform_publisher" name="footprint_to_base_link"
+        args="0 0 0.34 0 0 0 1 base_footprint base_link"/>
+</launch>

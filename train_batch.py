@@ -6,7 +6,7 @@ from datetime import datetime
 python_executable = sys.executable
 
 tasks = [
-    # cuda_device, task, exp_name, restore_name, ground, lateral, overhead, obs_name, term_collision_threshold
+    # cuda_device, task, exp_name, restore_name, ground, lateral, overhead, obs_path, term_collision_threshold
     (0, "G1Cat", "debug_", 'none', 0., 0., 0., "empty", 0.0),
 
 ]
@@ -14,7 +14,7 @@ tasks = [
 # exp_name: debug mode if 'debug' in experiment name
 # restore_name: you may need to restore the model from a checkpoint (e.g. our released model) if you want to curriculum learning. 'none' means training from scratch
 # ground, lateral, overhead: reward coefficients for ground, lateral, and overhead obstacles; you can set all to 1. for convenience. You can also set them according to the obstacle configuration for more fine-grained control
-# obs_name: name of the obstacle configuration, e.g., 'bar0', 'ceil1'. HumanoidPF 数据和障碍物数据是一一对应的，所以这里的 obs_name 会对应到 HumanoidPF 数据集中的同名数据
+# obs_path: path of the obstacle configuration, e.g., 'data/assets/TypiObs/bar0', 'data/assets/TypiObs/ceil1'. HumanoidPF 数据和障碍物数据是一一对应的，所以这里的 obs_path 会对应到 HumanoidPF 数据集中的同名数据
 # term_collision_threshold: the threshold of collision distance to terminate the episode
 
 processes = []
@@ -23,8 +23,8 @@ if __name__ == "__main__":
     output_dir = "./output_logs"
     os.makedirs(output_dir, exist_ok=True)
     process_cmd_map = {}
-    for cuda_device, task, exp_name, restore_name, ground, lateral, overhead, obs_name, term_collision_threshold in tasks:
-        cmd = f"CUDA_VISIBLE_DEVICES={cuda_device} {python_executable} -m train_ppo --task {task} --restore_name {restore_name} --exp_name {exp_name}  --ground {ground} --lateral {lateral} --overhead {overhead} --term_collision_threshold {term_collision_threshold} --obs_name {obs_name}"
+    for cuda_device, task, exp_name, restore_name, ground, lateral, overhead, obs_path, term_collision_threshold in tasks:
+        cmd = f"CUDA_VISIBLE_DEVICES={cuda_device} {python_executable} -m train_ppo --task {task} --restore_name {restore_name} --exp_name {exp_name}  --ground {ground} --lateral {lateral} --overhead {overhead} --term_collision_threshold {term_collision_threshold} --obs_path {obs_path}"
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 

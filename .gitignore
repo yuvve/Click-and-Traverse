@@ -31,6 +31,9 @@ __pycache__/
 # Distribution / packaging
 .Python
 build/
+deploy/Click-and-Traverse-SLAM/lidar_ws/build/*
+deploy/Click-and-Traverse-SLAM/lidar_ws/install/*
+deploy/Click-and-Traverse-SLAM/lidar_ws/log/*
 develop-eggs/
 dist/
 downloads/

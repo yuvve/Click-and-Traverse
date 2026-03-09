@@ -46,7 +46,7 @@ class Args:
     lateral: float = 0
     overhead: float = 0
     term_collision_threshold: float = 0.04
-    obs_name: str = 'empty'
+    obs_path: str = 'data/assets/TypiObs/empty'
     def generate_exp_name(self):
         exp_name_parts = [self.exp_name]
 
@@ -61,8 +61,8 @@ class Args:
 
         exp_name_parts.append(f"T{str(self.term_collision_threshold).replace('.', '')}")
 
-        if self.obs_name:
-            exp_name_parts.append(self.obs_name.replace('_', ''))
+        if self.obs_path:
+            exp_name_parts.append(self.obs_path.replace('/', '').replace('_', ''))
 
         return "x".join(exp_name_parts)
 
@@ -118,7 +118,7 @@ def _apply_args_to_config(args: Args, policy_cfg, env_config, debug: bool):
     env_config.reward_config.scales.kneesdf = args.lateral
     env_config.reward_config.scales.shldsdf = args.lateral
     env_config.term_collision_threshold = args.term_collision_threshold
-    env_config.pf_config.path = f'data/assets/RandObs/{args.obs_name}' if args.obs_name.startswith('D') else f'data/assets/TypiObs/{args.obs_name}'
+    env_config.pf_config.path = args.obs_path
 
 def _prepare_training_params(cfg, ckpt_path: Path):
     params = cfg.to_dict()

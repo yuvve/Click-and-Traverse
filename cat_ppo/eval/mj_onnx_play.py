@@ -21,7 +21,7 @@ class Args:
     seed: int = 42
     onnx_path: str = None
     pri: bool = False
-    obs_name: str = 'empty'
+    obs_path: str = 'data/assets/TypiObs/empty'
 
 
 @dataclass
@@ -34,7 +34,7 @@ def play(args: Args):
     env_class = cat_ppo.registry.get(args.task, "play_env_class")
     task_cfg = cat_ppo.registry.get(args.task, "config")
     env_cfg = task_cfg.env_config
-    env_cfg.pf_config.path = f'data/assets/RandObs/{args.obs_name}' if args.obs_name.startswith('D') else f'data/assets/TypiObs/{args.obs_name}'
+    env_cfg.pf_config.path = args.obs_path
     env = env_class(task_type=env_cfg.task_type, config=env_cfg)
     env.pri = args.pri
     if args.onnx_path is not None:

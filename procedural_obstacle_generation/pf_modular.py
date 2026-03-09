@@ -10,7 +10,7 @@ class PFConfig:
     Lx: float = 3.0               # x-axis (m) forward
     Ly: float = 2.0               # y-axis (m) left
     Lz: float = 1.5               # z-axis (m) up
-    origin_w: np.ndarray = np.array([-0.5, -1.0, 0.0], dtype=np.float32)
+    origin_w: np.ndarray = np.array([-0.5, -1.0, 0.0], dtype=np.float32) # pre-defined origin in canonical frame (m)
     start_w:  np.ndarray = np.array([0.0,  0.0, 0.75], dtype=np.float32)
     goal_w:   np.ndarray = np.array([2.0,  0.0, 0.75], dtype=np.float32)
 
